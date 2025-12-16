@@ -13,7 +13,9 @@ const isAuthenticated = ref(false);
 const user = ref(null);
 
 const isAdmin = computed(() => {
-  return user.value?.role === "admin";
+  if (!user.value) return false;
+  // Kiểm tra role từ user object
+  return user.value.role === "admin" || user.value.role === "admin";
 });
 
 onMounted(() => {
@@ -24,6 +26,18 @@ const checkAuth = () => {
   isAuthenticated.value = authService.isAuthenticated();
   if (isAuthenticated.value) {
     user.value = authService.getUser();
+    // Reset adminView nếu user không phải admin
+    if (
+      user.value &&
+      user.value.role !== "admin" &&
+      adminView.value !== "dashboard"
+    ) {
+      adminView.value = "dashboard";
+    }
+  } else {
+    user.value = null;
+    adminView.value = "dashboard";
+    currentView.value = "login";
   }
 };
 
@@ -58,32 +72,38 @@ const handleNavigate = (view) => {
 
 <template>
   <div>
-    <!-- Admin Dashboard -->
-    <Dashboard
-      v-if="isAuthenticated && isAdmin && adminView === 'dashboard'"
-      :user="user"
-      @logout="handleLogout"
-      @navigate="handleNavigate"
-    />
+    <!-- Admin Views - Chỉ hiển thị khi đã đăng nhập và là admin -->
+    <template v-if="isAuthenticated && isAdmin">
+      <!-- Admin Dashboard -->
+      <Dashboard
+        v-if="adminView === 'dashboard'"
+        :user="user"
+        @logout="handleLogout"
+        @navigate="handleNavigate"
+      />
 
-    <!-- Admin Products Management -->
-    <ProductsManagement
-      v-if="isAuthenticated && isAdmin && adminView === 'products'"
-      :user="user"
-      @logout="handleLogout"
-      @navigate="handleNavigate"
-    />
+      <!-- Admin Products Management -->
+      <ProductsManagement
+        v-else-if="adminView === 'products'"
+        :user="user"
+        @logout="handleLogout"
+        @navigate="handleNavigate"
+      />
 
-    <!-- Admin Import Products -->
-    <ImportProducts
-      v-if="isAuthenticated && isAdmin && adminView === 'import'"
-      :user="user"
-      @logout="handleLogout"
-      @navigate="handleNavigate"
-    />
+      <!-- Admin Import Products -->
+      <ImportProducts
+        v-else-if="adminView === 'import'"
+        :user="user"
+        @logout="handleLogout"
+        @navigate="handleNavigate"
+      />
+    </template>
 
     <!-- Regular User View -->
-    <div v-else-if="isAuthenticated" class="min-h-screen bg-gray-50">
+    <div
+      v-else-if="isAuthenticated && !isAdmin"
+      class="min-h-screen bg-gray-50"
+    >
       <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between h-16 items-center">
@@ -121,8 +141,8 @@ const handleNavigate = (view) => {
       </main>
     </div>
 
-    <!-- Auth Views -->
-    <div v-else>
+    <!-- Auth Views - Chỉ hiển thị khi chưa đăng nhập -->
+    <div v-if="!isAuthenticated">
       <Login
         v-if="currentView === 'login'"
         @switch-to-register="switchToRegister"

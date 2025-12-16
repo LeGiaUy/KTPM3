@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -31,6 +33,23 @@ class ProductController extends Controller
         }
 
         return $query->latest()->paginate($request->get('per_page', 10));
+    }
+
+    // GET /api/admin/products/statistics
+    public function statistics()
+    {
+        $totalProducts = Product::count();
+        $activeProducts = Product::where('status', 'active')->count();
+        $totalStock = (int) (Product::sum('stock') ?? 0);
+        $totalValue = (float) (Product::selectRaw('SUM(price * stock) as total')
+            ->value('total') ?? 0);
+
+        return response()->json([
+            'totalProducts' => (int) $totalProducts,
+            'activeProducts' => (int) $activeProducts,
+            'totalStock' => $totalStock,
+            'totalValue' => $totalValue,
+        ]);
     }
 
     // POST /api/admin/products
@@ -321,5 +340,175 @@ class ProductController extends Controller
         }
 
         return $results;
+    }
+
+    // POST /api/admin/products/import/openlibrary
+    public function importMany(Request $request)
+    {
+        $request->validate([
+            'keyword' => 'required|string|max:255',
+            'limit' => 'required|integer|min:1|max:20',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+        ]);
+
+        try {
+            // 1. Gọi OpenLibrary API
+            // Tắt SSL verification cho development (Windows SSL certificate issue)
+            $response = Http::withOptions([
+                'verify' => false,
+                'timeout' => 10,
+            ])->get(
+                'https://openlibrary.org/search.json',
+                [
+                    'q' => $request->keyword,
+                    'limit' => $request->limit,
+                ]
+            );
+
+            if ($response->failed()) {
+                \Log::error('OpenLibrary API failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                
+                return response()->json([
+                    'message' => 'Open Library API trả về lỗi: ' . $response->status(),
+                ], 500);
+            }
+
+            $data = $response->json();
+            
+            if (!isset($data['docs']) || !is_array($data['docs'])) {
+                return response()->json([
+                    'message' => 'Invalid response from Open Library',
+                ], 500);
+            }
+            
+            $docs = $data['docs'];
+            $inserted = [];
+            $skipped = 0;
+            $errors = [];
+
+            // 2. Duyệt từng sách và import
+            foreach ($docs as $index => $doc) {
+                try {
+                    // Bỏ qua nếu không có title
+                    if (empty($doc['title'])) {
+                        $skipped++;
+                        $errors[] = "Book " . ($index + 1) . ": Missing title";
+                        continue;
+                    }
+
+                    // Lấy ISBN (ưu tiên ISBN-13, fallback ISBN-10, nếu không có thì tạo UUID)
+                    $isbn = null;
+                    if (isset($doc['isbn']) && is_array($doc['isbn']) && !empty($doc['isbn'])) {
+                        // Tìm ISBN-13 trước
+                        foreach ($doc['isbn'] as $isbnValue) {
+                            if (strlen($isbnValue) == 13) {
+                                $isbn = $isbnValue;
+                                break;
+                            }
+                        }
+                        // Nếu không có ISBN-13, lấy ISBN-10
+                        if (!$isbn) {
+                            $isbn = $doc['isbn'][0];
+                        }
+                    }
+
+                    // Nếu không có ISBN, tạo UUID làm identifier
+                    if (!$isbn) {
+                        $isbn = 'OL-' . Str::uuid()->toString();
+                    }
+
+                    // 3. Kiểm tra ISBN đã tồn tại
+                    if (Product::where('isbn', $isbn)->exists()) {
+                        $skipped++;
+                        $errors[] = "Book " . ($index + 1) . " ({$doc['title']}): ISBN already exists";
+                        continue;
+                    }
+
+                    // 4. Tạo cover URL từ ISBN hoặc cover_i
+                    $coverUrl = null;
+                    if ($isbn && strpos($isbn, 'OL-') !== 0) {
+                        $coverUrl = "https://covers.openlibrary.org/b/isbn/{$isbn}-L.jpg";
+                    } elseif (isset($doc['cover_i'])) {
+                        $coverUrl = "https://covers.openlibrary.org/b/id/{$doc['cover_i']}-L.jpg";
+                    } elseif (isset($doc['cover_edition_key'])) {
+                        $coverUrl = "https://covers.openlibrary.org/b/olid/{$doc['cover_edition_key']}-L.jpg";
+                    }
+
+                    // 5. Lấy author (lấy tác giả đầu tiên nếu có nhiều)
+                    $author = null;
+                    if (isset($doc['author_name']) && is_array($doc['author_name']) && !empty($doc['author_name'])) {
+                        $author = $doc['author_name'][0];
+                    }
+
+                    // 6. Lấy publisher (lấy nhà xuất bản đầu tiên nếu có nhiều)
+                    $publisher = null;
+                    if (isset($doc['publisher']) && is_array($doc['publisher']) && !empty($doc['publisher'])) {
+                        $publisher = $doc['publisher'][0];
+                    }
+
+                    // 7. Tạo sản phẩm
+                    $productData = [
+                        'title' => $doc['title'],
+                        'author' => $author,
+                        'publisher' => $publisher,
+                        'isbn' => $isbn,
+                        'cover_url' => $coverUrl,
+                        'description' => null,
+                        'price' => $request->price,
+                        'stock' => $request->stock,
+                        'status' => 'active',
+                    ];
+
+                    // Thêm publish_date nếu có
+                    if (isset($doc['first_publish_year']) && is_numeric($doc['first_publish_year'])) {
+                        $productData['publish_date'] = $doc['first_publish_year'] . '-01-01';
+                    }
+
+                    // Thêm pages nếu có
+                    if (isset($doc['number_of_pages_median']) && is_numeric($doc['number_of_pages_median'])) {
+                        $productData['pages'] = (int) $doc['number_of_pages_median'];
+                    }
+
+                    $product = Product::create($productData);
+
+                    $inserted[] = $product;
+                } catch (\Exception $e) {
+                    $title = isset($doc['title']) ? $doc['title'] : 'Unknown';
+                    $errors[] = "Book " . ($index + 1) . " ({$title}): " . $e->getMessage();
+                }
+            }
+
+            return response()->json([
+                'message' => 'Import completed',
+                'total_found' => count($docs),
+                'total_imported' => count($inserted),
+                'total_skipped' => $skipped,
+                'books' => $inserted,
+                'errors' => $errors,
+            ], 201);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            \Log::error('OpenLibrary HTTP error: ' . $e->getMessage(), [
+                'request' => $request->all(),
+            ]);
+            
+            return response()->json([
+                'message' => 'Không thể kết nối đến Open Library API. Vui lòng thử lại sau.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        } catch (\Exception $e) {
+            \Log::error('OpenLibrary import error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+            
+            return response()->json([
+                'message' => 'Lỗi khi import: ' . $e->getMessage(),
+                'error' => config('app.debug') ? $e->getTraceAsString() : null,
+            ], 500);
+        }
     }
 }

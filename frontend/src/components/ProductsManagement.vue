@@ -47,6 +47,44 @@
             </svg>
             Sản phẩm
           </a>
+          <a
+            href="#"
+            class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            Người dùng
+          </a>
+          <a
+            href="#"
+            class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Thống kê
+          </a>
         </nav>
       </div>
     </aside>
@@ -305,42 +343,101 @@
 
           <!-- Pagination -->
           <div
-            v-if="pagination && pagination.last_page > 1"
-            class="px-6 py-4 border-t border-gray-200 flex items-center justify-between"
+            v-if="pagination && pagination.total > 0"
+            class="px-6 py-4 border-t border-gray-200"
           >
-            <div class="text-sm text-gray-700">
-              Hiển thị {{ pagination.from }} đến {{ pagination.to }} trong tổng
-              số {{ pagination.total }} sản phẩm
-            </div>
-            <div class="flex space-x-2">
-              <button
-                @click="changePage(pagination.current_page - 1)"
-                :disabled="pagination.current_page === 1"
-                :class="
-                  pagination.current_page === 1
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-50'
-                "
-                class="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            <div class="flex items-center justify-between">
+              <div class="text-sm text-gray-700">
+                <span v-if="pagination.from && pagination.to">
+                  Hiển thị {{ pagination.from }} đến {{ pagination.to }} trong
+                  tổng số {{ pagination.total }} sản phẩm
+                </span>
+                <span v-else> Tổng số {{ pagination.total }} sản phẩm </span>
+              </div>
+
+              <div
+                v-if="pagination.last_page > 1"
+                class="flex items-center space-x-2"
               >
-                Trước
-              </button>
-              <span class="px-3 py-2 text-sm">
-                Trang {{ pagination.current_page }} /
-                {{ pagination.last_page }}
-              </span>
-              <button
-                @click="changePage(pagination.current_page + 1)"
-                :disabled="pagination.current_page === pagination.last_page"
-                :class="
-                  pagination.current_page === pagination.last_page
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-50'
-                "
-                class="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              >
-                Sau
-              </button>
+                <!-- First Page -->
+                <button
+                  @click="changePage(1)"
+                  :disabled="pagination.current_page === 1"
+                  :class="
+                    pagination.current_page === 1
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-50'
+                  "
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium"
+                  title="Trang đầu"
+                >
+                  ««
+                </button>
+
+                <!-- Previous Page -->
+                <button
+                  @click="changePage(pagination.current_page - 1)"
+                  :disabled="pagination.current_page === 1"
+                  :class="
+                    pagination.current_page === 1
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-50'
+                  "
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium"
+                >
+                  ‹ Trước
+                </button>
+
+                <!-- Page Numbers -->
+                <div class="flex space-x-1">
+                  <template v-for="page in getPageNumbers()" :key="page">
+                    <button
+                      v-if="page !== '...'"
+                      @click="changePage(page)"
+                      :class="
+                        page === pagination.current_page
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'border-gray-300 hover:bg-gray-50'
+                      "
+                      class="px-3 py-2 border rounded-lg text-sm font-medium min-w-[40px]"
+                    >
+                      {{ page }}
+                    </button>
+                    <span v-else class="px-3 py-2 text-sm text-gray-500">
+                      {{ page }}
+                    </span>
+                  </template>
+                </div>
+
+                <!-- Next Page -->
+                <button
+                  @click="changePage(pagination.current_page + 1)"
+                  :disabled="pagination.current_page === pagination.last_page"
+                  :class="
+                    pagination.current_page === pagination.last_page
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-50'
+                  "
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium"
+                >
+                  Sau ›
+                </button>
+
+                <!-- Last Page -->
+                <button
+                  @click="changePage(pagination.last_page)"
+                  :disabled="pagination.current_page === pagination.last_page"
+                  :class="
+                    pagination.current_page === pagination.last_page
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-50'
+                  "
+                  class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium"
+                  title="Trang cuối"
+                >
+                  »»
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -623,7 +720,52 @@ const handleSearch = () => {
 const changePage = (page) => {
   if (page >= 1 && page <= pagination.value.last_page) {
     fetchProducts(page);
+    // Scroll to top when changing page
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
+};
+
+const getPageNumbers = () => {
+  if (!pagination.value) return [];
+
+  const current = pagination.value.current_page;
+  const last = pagination.value.last_page;
+  const pages = [];
+
+  if (last <= 7) {
+    // Hiển thị tất cả các trang nếu <= 7 trang
+    for (let i = 1; i <= last; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Logic hiển thị trang với ellipsis
+    if (current <= 3) {
+      // Đầu danh sách
+      for (let i = 1; i <= 4; i++) {
+        pages.push(i);
+      }
+      pages.push("...");
+      pages.push(last);
+    } else if (current >= last - 2) {
+      // Cuối danh sách
+      pages.push(1);
+      pages.push("...");
+      for (let i = last - 3; i <= last; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Giữa danh sách
+      pages.push(1);
+      pages.push("...");
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i);
+      }
+      pages.push("...");
+      pages.push(last);
+    }
+  }
+
+  return pages;
 };
 
 const openAddModal = () => {

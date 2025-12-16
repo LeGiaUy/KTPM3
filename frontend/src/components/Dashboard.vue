@@ -237,6 +237,11 @@
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
+                    Hình ảnh
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Tên sản phẩm
                   </th>
                   <th
@@ -272,6 +277,9 @@
                     <div class="h-4 bg-gray-200 rounded w-12"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="h-16 w-16 bg-gray-200 rounded"></div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
                     <div class="h-4 bg-gray-200 rounded w-48"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -288,7 +296,7 @@
                   </td>
                 </tr>
                 <tr v-else-if="products.length === 0">
-                  <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                  <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                     Chưa có sản phẩm nào
                   </td>
                 </tr>
@@ -302,6 +310,32 @@
                     #{{ product.id }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
+                    <img
+                      v-if="product.cover_url"
+                      :src="product.cover_url"
+                      :alt="product.title"
+                      class="h-16 w-16 object-cover rounded"
+                    />
+                    <div
+                      v-else
+                      class="h-16 w-16 bg-gray-200 rounded flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-8 h-8 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
                     <div class="text-sm font-medium text-gray-900">
                       {{ product.title }}
                     </div>
@@ -332,10 +366,12 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button class="text-indigo-600 hover:text-indigo-900 mr-3">
-                      Sửa
+                    <button
+                      @click="$emit('navigate', 'products')"
+                      class="text-indigo-600 hover:text-indigo-900 mr-3"
+                    >
+                      Xem
                     </button>
-                    <button class="text-red-600 hover:text-red-900">Xóa</button>
                   </td>
                 </tr>
               </tbody>
@@ -343,8 +379,18 @@
           </div>
           <div
             v-if="products.length > 0"
-            class="px-6 py-4 border-t border-gray-200"
+            class="px-6 py-4 border-t border-gray-200 flex justify-between items-center"
           >
+            <div class="text-sm text-gray-600">
+              <span v-if="pagination && pagination.total > 5">
+                Hiển thị 5 sản phẩm đầu tiên trong tổng số
+                {{ pagination.total }} sản phẩm
+              </span>
+              <span v-else>
+                Hiển thị tất cả {{ pagination?.total || products.length }} sản
+                phẩm
+              </span>
+            </div>
             <button
               @click="$emit('navigate', 'products')"
               class="text-indigo-600 hover:text-indigo-900 font-medium"
@@ -373,6 +419,7 @@ defineEmits(["logout", "navigate"]);
 
 const loading = ref(true);
 const products = ref([]);
+const pagination = ref(null);
 const stats = ref({
   totalProducts: 0,
   activeProducts: 0,
@@ -383,23 +430,15 @@ const stats = ref({
 const fetchProducts = async () => {
   try {
     loading.value = true;
-    const response = await api.get("/admin/products?per_page=5");
-    products.value = response.data.data || [];
 
-    // Calculate statistics
-    const allProducts = response.data.data || [];
-    stats.value.totalProducts = response.data.total || 0;
-    stats.value.activeProducts = allProducts.filter(
-      (p) => p.status === "active"
-    ).length;
-    stats.value.totalStock = allProducts.reduce(
-      (sum, p) => sum + (p.stock || 0),
-      0
-    );
-    stats.value.totalValue = allProducts.reduce(
-      (sum, p) => sum + p.price * (p.stock || 0),
-      0
-    );
+    // Fetch recent products
+    const productsResponse = await api.get("/admin/products?per_page=5");
+    products.value = productsResponse.data.data || [];
+    pagination.value = {
+      current_page: productsResponse.data.current_page || 1,
+      last_page: productsResponse.data.last_page || 1,
+      total: productsResponse.data.total || 0,
+    };
   } catch (error) {
     console.error("Error fetching products:", error);
   } finally {
@@ -407,14 +446,33 @@ const fetchProducts = async () => {
   }
 };
 
+const fetchStatistics = async () => {
+  try {
+    const statsResponse = await api.get("/admin/products/statistics");
+    if (statsResponse.data) {
+      stats.value = {
+        totalProducts: statsResponse.data.totalProducts ?? 0,
+        activeProducts: statsResponse.data.activeProducts ?? 0,
+        totalStock: statsResponse.data.totalStock ?? 0,
+        totalValue: statsResponse.data.totalValue ?? 0,
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching statistics:", error);
+    // Giữ nguyên giá trị mặc định nếu có lỗi
+  }
+};
+
 const formatCurrency = (value) => {
+  const numValue = Number(value) || 0;
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
-  }).format(value);
+  }).format(numValue);
 };
 
 onMounted(() => {
   fetchProducts();
+  fetchStatistics();
 });
 </script>

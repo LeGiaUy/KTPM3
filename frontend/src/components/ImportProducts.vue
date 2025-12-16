@@ -72,6 +72,123 @@
       <!-- Content -->
       <main class="p-6">
         <div class="max-w-4xl mx-auto">
+          <!-- Open Library Import Section -->
+          <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+              Import tự động từ Open Library
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Từ khóa tìm kiếm <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="openLibraryForm.keyword"
+                  type="text"
+                  placeholder="Ví dụ: clean code"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Số lượng sách <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model.number="openLibraryForm.limit"
+                  type="number"
+                  min="1"
+                  max="20"
+                  placeholder="5"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Giá (VND) <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model.number="openLibraryForm.price"
+                  type="number"
+                  min="0"
+                  step="1000"
+                  placeholder="100000"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Tồn kho <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model.number="openLibraryForm.stock"
+                  type="number"
+                  min="0"
+                  placeholder="10"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <button
+              @click="importFromOpenLibrary"
+              :disabled="importingOpenLibrary || !isOpenLibraryFormValid"
+              class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              <svg
+                v-if="importingOpenLibrary"
+                class="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <svg
+                v-else
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+              {{
+                importingOpenLibrary
+                  ? "Đang import..."
+                  : "Import từ Open Library"
+              }}
+            </button>
+            <p class="mt-2 text-sm text-gray-500">
+              💡 Hệ thống sẽ tự động tìm kiếm và import sách từ Open Library với
+              thông tin đã nhập
+            </p>
+          </div>
+
+          <!-- Divider -->
+          <div class="relative my-8">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-gray-50 text-gray-500">Hoặc</span>
+            </div>
+          </div>
+
           <!-- Instructions -->
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
             <h3 class="text-lg font-semibold text-blue-900 mb-3">
@@ -297,7 +414,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import api from "../services/api.js";
 
 const props = defineProps({
@@ -314,6 +431,25 @@ const selectedFile = ref(null);
 const isDragging = ref(false);
 const uploading = ref(false);
 const importResults = ref(null);
+
+// Open Library import
+const importingOpenLibrary = ref(false);
+const openLibraryForm = ref({
+  keyword: "",
+  limit: 5,
+  price: 100000,
+  stock: 10,
+});
+
+const isOpenLibraryFormValid = computed(() => {
+  return (
+    openLibraryForm.value.keyword.trim() &&
+    openLibraryForm.value.limit >= 1 &&
+    openLibraryForm.value.limit <= 20 &&
+    openLibraryForm.value.price >= 0 &&
+    openLibraryForm.value.stock >= 0
+  );
+});
 
 const handleFileSelect = (event) => {
   const file = event.target.files[0];
@@ -457,5 +593,51 @@ const downloadTemplate = () => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+};
+
+// Open Library import function
+const importFromOpenLibrary = async () => {
+  if (!isOpenLibraryFormValid.value) {
+    alert("Vui lòng điền đầy đủ thông tin hợp lệ");
+    return;
+  }
+
+  importingOpenLibrary.value = true;
+  importResults.value = null;
+
+  try {
+    const response = await api.post("/admin/products/import/openlibrary", {
+      keyword: openLibraryForm.value.keyword,
+      limit: openLibraryForm.value.limit,
+      price: openLibraryForm.value.price,
+      stock: openLibraryForm.value.stock,
+    });
+
+    // Format results để hiển thị giống import file
+    importResults.value = {
+      success: response.data.total_imported || 0,
+      failed: 0,
+      skipped: response.data.total_skipped || 0,
+      errors: response.data.errors || [],
+    };
+
+    if (response.data.total_imported > 0) {
+      // Reset form sau khi import thành công
+      openLibraryForm.value.keyword = "";
+    }
+  } catch (error) {
+    console.error("Open Library import error:", error);
+    const errorMessage =
+      error.response?.data?.message || "Lỗi khi import từ Open Library";
+
+    importResults.value = {
+      success: 0,
+      failed: openLibraryForm.value.limit,
+      skipped: 0,
+      errors: [errorMessage],
+    };
+  } finally {
+    importingOpenLibrary.value = false;
+  }
 };
 </script>

@@ -7,8 +7,12 @@ use App\Http\Controllers\Api\Admin\ProductController;
 Route::middleware(['auth:sanctum', 'admin'])
     ->prefix('admin')
     ->group(function () {
-        Route::apiResource('products', ProductController::class);
+        // Đặt các route đặc biệt TRƯỚC apiResource để tránh conflict
+        Route::get('products/statistics', [ProductController::class, 'statistics']);
         Route::post('products/import', [ProductController::class, 'import']);
+        Route::post('products/import/openlibrary', [ProductController::class, 'importMany']);
+        // apiResource phải đặt SAU các route đặc biệt
+        Route::apiResource('products', ProductController::class);
     });
 
 // 🔓 PUBLIC ROUTES
