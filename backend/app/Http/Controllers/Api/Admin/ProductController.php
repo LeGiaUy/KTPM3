@@ -114,6 +114,35 @@ class ProductController extends Controller
         ]);
     }
 
+    // POST /api/admin/products/bulk-delete
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:products,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = Product::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'message' => "Đã xóa {$deletedCount} sản phẩm thành công",
+            'deleted_count' => $deletedCount,
+        ]);
+    }
+
+    // DELETE /api/admin/products/delete-all
+    public function deleteAll()
+    {
+        $totalCount = Product::count();
+        Product::truncate();
+
+        return response()->json([
+            'message' => "Đã xóa tất cả {$totalCount} sản phẩm thành công",
+            'deleted_count' => $totalCount,
+        ]);
+    }
+
     // POST /api/admin/products/import
     public function import(Request $request)
     {

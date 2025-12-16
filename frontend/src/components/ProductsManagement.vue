@@ -137,6 +137,46 @@
           </div>
           <div class="ml-4 flex space-x-3">
             <button
+              v-if="selectedProducts.length > 0"
+              @click="confirmBulkDelete"
+              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+            >
+              <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Xóa đã chọn ({{ selectedProducts.length }})
+            </button>
+            <button
+              v-if="pagination && pagination.total > 0"
+              @click="confirmDeleteAll"
+              class="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center"
+            >
+              <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Xóa tất cả ({{ pagination.total }})
+            </button>
+            <button
               @click="$emit('navigate', 'import')"
               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
             >
@@ -186,6 +226,16 @@
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
+                    <input
+                      type="checkbox"
+                      :checked="isAllSelected"
+                      @change="toggleSelectAll"
+                      class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     ID
                   </th>
                   <th
@@ -228,6 +278,9 @@
                   class="animate-pulse"
                 >
                   <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="h-4 w-4 bg-gray-200 rounded"></div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
                     <div class="h-4 bg-gray-200 rounded w-12"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -250,7 +303,7 @@
                   </td>
                 </tr>
                 <tr v-else-if="products.length === 0">
-                  <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                  <td colspan="8" class="px-6 py-8 text-center text-gray-500">
                     Không tìm thấy sản phẩm nào
                   </td>
                 </tr>
@@ -258,8 +311,19 @@
                   v-else
                   v-for="product in products"
                   :key="product.id"
-                  class="hover:bg-gray-50"
+                  :class="[
+                    'hover:bg-gray-50',
+                    selectedProducts.includes(product.id) ? 'bg-blue-50' : '',
+                  ]"
                 >
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      :value="product.id"
+                      v-model="selectedProducts"
+                      class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     #{{ product.id }}
                   </td>
@@ -447,9 +511,10 @@
     <!-- Add/Edit Modal -->
     <div
       v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click.self="closeModal"
+      <div
+      class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
     >
+      @click.self="closeModal" >
       <div
         class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
       >
@@ -610,9 +675,10 @@
     <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click.self="showDeleteModal = false"
+      <div
+      class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
     >
+      @click.self="showDeleteModal = false" >
       <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div class="p-6">
           <h3 class="text-lg font-semibold text-gray-800 mb-2">Xác nhận xóa</h3>
@@ -639,11 +705,105 @@
         </div>
       </div>
     </div>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <div
+      v-if="showBulkDeleteModal"
+      <div
+      class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
+    >
+      @click.self="showBulkDeleteModal = false" >
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">
+            Xác nhận xóa nhiều sản phẩm
+          </h3>
+          <p class="text-gray-600 mb-4">
+            Bạn có chắc chắn muốn xóa
+            <strong>{{ selectedProducts.length }} sản phẩm</strong> đã chọn
+            không? Hành động này không thể hoàn tác.
+          </p>
+          <div class="flex justify-end space-x-3">
+            <button
+              @click="showBulkDeleteModal = false"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Hủy
+            </button>
+            <button
+              @click="bulkDeleteProducts"
+              :disabled="bulkDeleting"
+              class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {{ bulkDeleting ? "Đang xóa..." : "Xóa" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete All Confirmation Modal -->
+    <div
+      v-if="showDeleteAllModal"
+      <div
+      class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
+    >
+      @click.self="showDeleteAllModal = false" >
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-6">
+          <div
+            class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full"
+          >
+            <svg
+              class="w-6 h-6 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">
+            Xác nhận xóa tất cả sản phẩm
+          </h3>
+          <p class="text-gray-600 mb-4 text-center">
+            Bạn có chắc chắn muốn xóa
+            <strong class="text-red-600"
+              >TẤT CẢ {{ pagination?.total || 0 }} sản phẩm</strong
+            >
+            không?<br />
+            <span class="text-red-600 font-semibold"
+              >Hành động này không thể hoàn tác!</span
+            >
+          </p>
+          <div class="flex justify-end space-x-3">
+            <button
+              @click="showDeleteAllModal = false"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Hủy
+            </button>
+            <button
+              @click="deleteAllProducts"
+              :disabled="deletingAll"
+              class="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 disabled:opacity-50"
+            >
+              {{ deletingAll ? "Đang xóa..." : "Xóa tất cả" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import api from "../services/api.js";
 
 const props = defineProps({
@@ -658,13 +818,18 @@ defineEmits(["logout", "navigate"]);
 const loading = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
+const bulkDeleting = ref(false);
+const deletingAll = ref(false);
 const products = ref([]);
 const pagination = ref(null);
 const searchQuery = ref("");
 const searchTimeout = ref(null);
+const selectedProducts = ref([]);
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
+const showBulkDeleteModal = ref(false);
+const showDeleteAllModal = ref(false);
 const editingProduct = ref(null);
 const productToDelete = ref(null);
 
@@ -862,6 +1027,77 @@ const formatCurrency = (value) => {
     style: "currency",
     currency: "VND",
   }).format(value);
+};
+
+const isAllSelected = computed(() => {
+  return (
+    products.value.length > 0 &&
+    products.value.every((product) =>
+      selectedProducts.value.includes(product.id)
+    )
+  );
+});
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedProducts.value = [];
+  } else {
+    selectedProducts.value = products.value.map((product) => product.id);
+  }
+};
+
+const confirmBulkDelete = () => {
+  if (selectedProducts.value.length === 0) {
+    alert("Vui lòng chọn ít nhất một sản phẩm để xóa");
+    return;
+  }
+  showBulkDeleteModal.value = true;
+};
+
+const bulkDeleteProducts = async () => {
+  try {
+    bulkDeleting.value = true;
+    const response = await api.post("/admin/products/bulk-delete", {
+      ids: selectedProducts.value,
+    });
+    alert(response.data.message || "Xóa sản phẩm thành công!");
+    showBulkDeleteModal.value = false;
+    selectedProducts.value = [];
+    fetchProducts(pagination.value?.current_page || 1);
+  } catch (error) {
+    console.error("Error bulk deleting products:", error);
+    const errorMessage =
+      error.response?.data?.message || "Lỗi khi xóa sản phẩm";
+    alert(errorMessage);
+  } finally {
+    bulkDeleting.value = false;
+  }
+};
+
+const confirmDeleteAll = () => {
+  if (!pagination.value || pagination.value.total === 0) {
+    alert("Không có sản phẩm nào để xóa");
+    return;
+  }
+  showDeleteAllModal.value = true;
+};
+
+const deleteAllProducts = async () => {
+  try {
+    deletingAll.value = true;
+    const response = await api.delete("/admin/products/delete-all");
+    alert(response.data.message || "Xóa tất cả sản phẩm thành công!");
+    showDeleteAllModal.value = false;
+    selectedProducts.value = [];
+    fetchProducts(1);
+  } catch (error) {
+    console.error("Error deleting all products:", error);
+    const errorMessage =
+      error.response?.data?.message || "Lỗi khi xóa tất cả sản phẩm";
+    alert(errorMessage);
+  } finally {
+    deletingAll.value = false;
+  }
 };
 
 onMounted(() => {

@@ -11,6 +11,8 @@ Route::middleware(['auth:sanctum', 'admin'])
         Route::get('products/statistics', [ProductController::class, 'statistics']);
         Route::post('products/import', [ProductController::class, 'import']);
         Route::post('products/import/openlibrary', [ProductController::class, 'importMany']);
+        Route::post('products/bulk-delete', [ProductController::class, 'bulkDelete']);
+        Route::delete('products/delete-all', [ProductController::class, 'deleteAll']);
         // apiResource phải đặt SAU các route đặc biệt
         Route::apiResource('products', ProductController::class);
     });
