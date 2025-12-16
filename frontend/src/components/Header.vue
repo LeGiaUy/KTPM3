@@ -7,7 +7,7 @@
             :to="{ name: 'home' }"
             class="text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors"
           >
-            KTPM3
+            KTPM
           </router-link>
         </div>
         <div class="flex items-center space-x-4">
