@@ -8,6 +8,7 @@ Route::middleware(['auth:sanctum', 'admin'])
     ->prefix('admin')
     ->group(function () {
         Route::apiResource('products', ProductController::class);
+        Route::post('products/import', [ProductController::class, 'import']);
     });
 
 // 🔓 PUBLIC ROUTES
