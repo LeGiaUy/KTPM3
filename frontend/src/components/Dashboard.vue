@@ -7,9 +7,8 @@
       <div class="p-6">
         <h1 class="text-2xl font-bold mb-8">Admin Panel</h1>
         <nav class="space-y-2">
-          <a
-            href="#"
-            @click.prevent="$emit('navigate', 'dashboard')"
+          <router-link
+            :to="{ name: 'admin-dashboard' }"
             class="flex items-center px-4 py-3 bg-gray-800 rounded-lg text-white"
           >
             <svg
@@ -26,10 +25,9 @@
               />
             </svg>
             Dashboard
-          </a>
-          <a
-            href="#"
-            @click.prevent="$emit('navigate', 'products')"
+          </router-link>
+          <router-link
+            :to="{ name: 'admin-products' }"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
           >
             <svg
@@ -46,7 +44,7 @@
               />
             </svg>
             Sản phẩm
-          </a>
+          </router-link>
           <a
             href="#"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
@@ -277,7 +275,7 @@
                     <div class="h-4 bg-gray-200 rounded w-12"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="h-16 w-16 bg-gray-200 rounded"></div>
+                    <div class="h-28 w-20 bg-gray-200 rounded"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="h-4 bg-gray-200 rounded w-48"></div>
@@ -310,17 +308,17 @@
                     #{{ product.id }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <img
-                      v-if="product.cover_url"
-                      :src="product.cover_url"
-                      :alt="product.title"
-                      class="h-16 w-16 object-cover rounded"
-                    />
                     <div
-                      v-else
-                      class="h-16 w-16 bg-gray-200 rounded flex items-center justify-center"
+                      class="h-28 w-20 bg-gray-100 rounded flex items-center justify-center p-1"
                     >
+                      <img
+                        v-if="product.cover_url"
+                        :src="product.cover_url"
+                        :alt="product.title"
+                        class="max-h-full max-w-full object-contain rounded"
+                      />
                       <svg
+                        v-else
                         class="w-8 h-8 text-gray-400"
                         fill="none"
                         stroke="currentColor"
@@ -367,7 +365,7 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
-                      @click="$emit('navigate', 'products')"
+                      @click="$router.push({ name: 'admin-products' })"
                       class="text-indigo-600 hover:text-indigo-900 mr-3"
                     >
                       Xem
@@ -415,7 +413,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(["logout", "navigate"]);
+defineEmits(["logout"]);
 
 const loading = ref(true);
 const products = ref([]);

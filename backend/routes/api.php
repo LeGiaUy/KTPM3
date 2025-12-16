@@ -1,32 +1,26 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Admin\ProductController;
+use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\ProductController;
 
 // 🔐 ADMIN ROUTES
 Route::middleware(['auth:sanctum', 'admin'])
     ->prefix('admin')
     ->group(function () {
         // Đặt các route đặc biệt TRƯỚC apiResource để tránh conflict
-        Route::get('products/statistics', [ProductController::class, 'statistics']);
-        Route::post('products/import', [ProductController::class, 'import']);
-        Route::post('products/import/openlibrary', [ProductController::class, 'importMany']);
-        Route::post('products/bulk-delete', [ProductController::class, 'bulkDelete']);
-        Route::delete('products/delete-all', [ProductController::class, 'deleteAll']);
+        Route::get('products/statistics', [AdminProductController::class, 'statistics']);
+        Route::post('products/import', [AdminProductController::class, 'import']);
+        Route::post('products/import/openlibrary', [AdminProductController::class, 'importMany']);
+        Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete']);
+        Route::delete('products/delete-all', [AdminProductController::class, 'deleteAll']);
         // apiResource phải đặt SAU các route đặc biệt
-        Route::apiResource('products', ProductController::class);
+        Route::apiResource('products', AdminProductController::class);
     });
 
 // 🔓 PUBLIC ROUTES
-use App\Models\Product;
-
-Route::get('/products', function () {
-    return Product::where('status', 'active')->paginate(10);
-});
-
-Route::get('/products/{product}', function (Product $product) {
-    return $product;
-});
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
 
 // 🔥 LOAD AUTH ROUTES (BREEZE)
 require __DIR__.'/auth.php';

@@ -26,10 +26,9 @@
               />
             </svg>
             Dashboard
-          </a>
-          <a
-            href="#"
-            @click.prevent="$emit('navigate', 'products')"
+          </router-link>
+          <router-link
+            :to="{ name: 'admin-products' }"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
           >
             <svg
@@ -46,7 +45,7 @@
               />
             </svg>
             Sản phẩm
-          </a>
+          </router-link>
         </nav>
       </div>
     </aside>
@@ -398,12 +397,12 @@
               </div>
 
               <div class="mt-4 flex justify-end">
-                <button
-                  @click="$emit('navigate', 'products')"
-                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                <router-link
+                  :to="{ name: 'admin-products' }"
+                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors inline-block"
                 >
                   Xem danh sách sản phẩm
-                </button>
+                </router-link>
               </div>
             </div>
           </div>
@@ -424,7 +423,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(["logout", "navigate"]);
+defineEmits(["logout"]);
 
 const fileInput = ref(null);
 const selectedFile = ref(null);

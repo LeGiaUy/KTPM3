@@ -7,9 +7,8 @@
       <div class="p-6">
         <h1 class="text-2xl font-bold mb-8">Admin Panel</h1>
         <nav class="space-y-2">
-          <a
-            href="#"
-            @click.prevent="$emit('navigate', 'dashboard')"
+          <router-link
+            :to="{ name: 'admin-dashboard' }"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
           >
             <svg
@@ -26,10 +25,9 @@
               />
             </svg>
             Dashboard
-          </a>
-          <a
-            href="#"
-            @click.prevent="$emit('navigate', 'products')"
+          </router-link>
+          <router-link
+            :to="{ name: 'admin-products' }"
             class="flex items-center px-4 py-3 bg-gray-800 rounded-lg text-white"
           >
             <svg
@@ -46,7 +44,7 @@
               />
             </svg>
             Sản phẩm
-          </a>
+          </router-link>
           <a
             href="#"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
@@ -176,8 +174,8 @@
               </svg>
               Xóa tất cả ({{ pagination.total }})
             </button>
-            <button
-              @click="$emit('navigate', 'import')"
+            <router-link
+              :to="{ name: 'admin-import' }"
               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
             >
               <svg
@@ -194,7 +192,7 @@
                 />
               </svg>
               Import
-            </button>
+            </router-link>
             <button
               @click="openAddModal"
               class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
@@ -813,7 +811,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(["logout", "navigate"]);
+defineEmits(["logout"]);
 
 const loading = ref(false);
 const saving = ref(false);
