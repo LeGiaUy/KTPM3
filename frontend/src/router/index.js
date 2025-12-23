@@ -6,6 +6,7 @@ const Login = () => import("../components/Login.vue");
 const Register = () => import("../components/Register.vue");
 const Dashboard = () => import("../components/Dashboard.vue");
 const ProductsManagement = () => import("../components/ProductsManagement.vue");
+const UsersManagement = () => import("../components/UsersManagement.vue");
 const ImportProducts = () => import("../components/ImportProducts.vue");
 const Home = () => import("../components/Home.vue");
 const Products = () => import("../components/Products.vue");
@@ -35,6 +36,12 @@ const routes = [
     path: "/admin/products",
     name: "admin-products",
     component: ProductsManagement,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: "/admin/users",
+    name: "admin-users",
+    component: UsersManagement,
     meta: { requiresAuth: true, requiresAdmin: true },
   },
   {

@@ -45,8 +45,8 @@
             </svg>
             Sản phẩm
           </router-link>
-          <a
-            href="#"
+          <router-link
+            :to="{ name: 'admin-users' }"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
           >
             <svg
@@ -63,7 +63,7 @@
               />
             </svg>
             Người dùng
-          </a>
+          </router-link>
           <a
             href="#"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"

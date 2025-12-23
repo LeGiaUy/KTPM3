@@ -28,7 +28,7 @@
           </router-link>
           <router-link
             :to="{ name: 'admin-products' }"
-            class="flex items-center px-4 py-3 bg-gray-800 rounded-lg text-white"
+            class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -47,7 +47,7 @@
           </router-link>
           <router-link
             :to="{ name: 'admin-users' }"
-            class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
+            class="flex items-center px-4 py-3 bg-gray-800 rounded-lg text-white"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -64,25 +64,6 @@
             </svg>
             Người dùng
           </router-link>
-          <a
-            href="#"
-            class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
-          >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-            Thống kê
-          </a>
         </nav>
       </div>
     </aside>
@@ -92,7 +73,9 @@
       <!-- Top Navigation -->
       <header class="bg-white shadow-sm sticky top-0 z-20">
         <div class="px-6 py-4 flex justify-between items-center">
-          <h2 class="text-2xl font-semibold text-gray-800">Quản lý sản phẩm</h2>
+          <h2 class="text-2xl font-semibold text-gray-800">
+            Quản lý người dùng
+          </h2>
           <div class="flex items-center space-x-4">
             <span class="text-gray-700">Xin chào, {{ user?.name }}</span>
             <button
@@ -112,10 +95,10 @@
           <div class="flex-1 max-w-md">
             <div class="relative">
               <input
-                v-model="searchQuery"
+                v-model="search_query"
                 @input="handleSearch"
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder="Tìm kiếm người dùng..."
                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
               <svg
@@ -135,7 +118,7 @@
           </div>
           <div class="ml-4 flex space-x-3">
             <button
-              v-if="selectedProducts.length > 0"
+              v-if="selected_users.length > 0"
               @click="confirmBulkDelete"
               class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
             >
@@ -152,47 +135,8 @@
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 />
               </svg>
-              Xóa đã chọn ({{ selectedProducts.length }})
+              Xóa đã chọn ({{ selected_users.length }})
             </button>
-            <button
-              v-if="pagination && pagination.total > 0"
-              @click="confirmDeleteAll"
-              class="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center"
-            >
-              <svg
-                class="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-              Xóa tất cả ({{ pagination.total }})
-            </button>
-            <router-link
-              :to="{ name: 'admin-import' }"
-              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
-            >
-              <svg
-                class="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-              Import
-            </router-link>
             <button
               @click="openAddModal"
               class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
@@ -210,12 +154,12 @@
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Thêm sản phẩm
+              Thêm người dùng
             </button>
           </div>
         </div>
 
-        <!-- Products Table -->
+        <!-- Users Table -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -226,7 +170,7 @@
                   >
                     <input
                       type="checkbox"
-                      :checked="isAllSelected"
+                      :checked="is_all_selected"
                       @change="toggleSelectAll"
                       class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
@@ -239,27 +183,22 @@
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Hình ảnh
+                    Tên
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Tên sản phẩm
+                    Email
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Giá
+                    Vai trò
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Tồn kho
-                  </th>
-                  <th
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Trạng thái
+                    Ngày tạo
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -282,118 +221,86 @@
                     <div class="h-4 bg-gray-200 rounded w-12"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="h-16 w-16 bg-gray-200 rounded"></div>
+                    <div class="h-4 bg-gray-200 rounded w-32"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="h-4 bg-gray-200 rounded w-48"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="h-4 bg-gray-200 rounded w-20"></div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
                     <div class="h-4 bg-gray-200 rounded w-16"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="h-4 bg-gray-200 rounded w-16"></div>
+                    <div class="h-4 bg-gray-200 rounded w-24"></div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="h-4 bg-gray-200 rounded w-20"></div>
                   </td>
                 </tr>
-                <tr v-else-if="products.length === 0">
-                  <td colspan="8" class="px-6 py-8 text-center text-gray-500">
-                    Không tìm thấy sản phẩm nào
+                <tr v-else-if="users.length === 0">
+                  <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                    Không tìm thấy người dùng nào
                   </td>
                 </tr>
                 <tr
                   v-else
-                  v-for="product in products"
-                  :key="product.id"
+                  v-for="user_item in users"
+                  :key="user_item.id"
                   :class="[
                     'hover:bg-gray-50',
-                    selectedProducts.includes(product.id) ? 'bg-blue-50' : '',
+                    selected_users.includes(user_item.id) ? 'bg-blue-50' : '',
                   ]"
                 >
                   <td class="px-6 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
-                      :value="product.id"
-                      v-model="selectedProducts"
+                      :value="user_item.id"
+                      v-model="selected_users"
                       class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    #{{ product.id }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <img
-                      v-if="product.cover_url"
-                      :src="product.cover_url"
-                      :alt="product.title"
-                      class="h-16 w-16 object-cover rounded"
-                    />
-                    <div
-                      v-else
-                      class="h-16 w-16 bg-gray-200 rounded flex items-center justify-center"
-                    >
-                      <svg
-                        class="w-8 h-8 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
+                    #{{ user_item.id }}
                   </td>
                   <td class="px-6 py-4">
                     <div class="text-sm font-medium text-gray-900">
-                      {{ product.title }}
-                    </div>
-                    <div v-if="product.author" class="text-sm text-gray-500">
-                      {{ product.author }}
-                    </div>
-                    <div v-if="product.isbn" class="text-xs text-gray-400">
-                      ISBN: {{ product.isbn }}
+                      {{ user_item.name }}
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatCurrency(product.price) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ product.stock }}
+                    {{ user_item.email }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span
                       :class="
-                        product.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                        user_item.role === 'admin'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
                       "
                       class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                     >
-                      {{
-                        product.status === "active"
-                          ? "Hoạt động"
-                          : "Ngừng hoạt động"
-                      }}
+                      {{ user_item.role === "admin" ? "Admin" : "Người dùng" }}
                     </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{
+                      new Date(user_item.created_at).toLocaleDateString("vi-VN")
+                    }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
-                      @click="openEditModal(product)"
+                      @click="openEditModal(user_item)"
                       class="text-indigo-600 hover:text-indigo-900 mr-3"
                     >
                       Sửa
                     </button>
                     <button
-                      @click="confirmDelete(product)"
-                      class="text-red-600 hover:text-red-900"
+                      @click="confirmDelete(user_item)"
+                      :disabled="user_item.id === user.id"
+                      :class="
+                        user_item.id === user.id
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-red-600 hover:text-red-900'
+                      "
                     >
                       Xóa
                     </button>
@@ -412,9 +319,9 @@
               <div class="text-sm text-gray-700">
                 <span v-if="pagination.from && pagination.to">
                   Hiển thị {{ pagination.from }} đến {{ pagination.to }} trong
-                  tổng số {{ pagination.total }} sản phẩm
+                  tổng số {{ pagination.total }} người dùng
                 </span>
-                <span v-else> Tổng số {{ pagination.total }} sản phẩm </span>
+                <span v-else> Tổng số {{ pagination.total }} người dùng </span>
               </div>
 
               <div
@@ -508,11 +415,10 @@
 
     <!-- Add/Edit Modal -->
     <div
-      v-if="showModal"
-      <div
+      v-if="show_modal"
       class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
+      @click.self="closeModal"
     >
-      @click.self="closeModal" >
       <div
         class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
       >
@@ -520,7 +426,7 @@
           class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
         >
           <h3 class="text-xl font-semibold text-gray-800">
-            {{ editingProduct ? "Sửa sản phẩm" : "Thêm sản phẩm mới" }}
+            {{ editing_user ? "Sửa người dùng" : "Thêm người dùng mới" }}
           </h3>
           <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
             <svg
@@ -539,114 +445,63 @@
           </button>
         </div>
 
-        <form @submit.prevent="saveProduct" class="p-6">
+        <form @submit.prevent="saveUser" class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Tên sản phẩm <span class="text-red-500">*</span>
+                Tên <span class="text-red-500">*</span>
               </label>
               <input
-                v-model="form.title"
+                v-model="form.name"
                 type="text"
                 required
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
-            <div>
+            <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Giá <span class="text-red-500">*</span>
+                Email <span class="text-red-500">*</span>
               </label>
               <input
-                v-model.number="form.price"
-                type="number"
-                step="0.01"
-                min="0"
+                v-model="form.email"
+                type="email"
                 required
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
-            <div>
+            <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Tồn kho <span class="text-red-500">*</span>
+                Mật khẩu
+                <span class="text-red-500">*</span>
+                <span
+                  v-if="editing_user"
+                  class="text-xs text-gray-500 font-normal"
+                >
+                  (Để trống nếu không muốn thay đổi)
+                </span>
               </label>
               <input
-                v-model.number="form.stock"
-                type="number"
-                min="0"
-                required
+                v-model="form.password"
+                type="password"
+                :required="!editing_user"
+                :minlength="8"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
 
-            <div>
+            <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Tác giả
-              </label>
-              <input
-                v-model="form.author"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Nhà xuất bản
-              </label>
-              <input
-                v-model="form.publisher"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                ISBN
-              </label>
-              <input
-                v-model="form.isbn"
-                type="text"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Trạng thái
+                Vai trò <span class="text-red-500">*</span>
               </label>
               <select
-                v-model="form.status"
+                v-model="form.role"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="active">Hoạt động</option>
-                <option value="inactive">Ngừng hoạt động</option>
+                <option value="user">Người dùng</option>
+                <option value="admin">Admin</option>
               </select>
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                URL hình ảnh
-              </label>
-              <input
-                v-model="form.cover_url"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Mô tả
-              </label>
-              <textarea
-                v-model="form.description"
-                rows="4"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              ></textarea>
             </div>
           </div>
 
@@ -672,28 +527,27 @@
 
     <!-- Delete Confirmation Modal -->
     <div
-      v-if="showDeleteModal"
-      <div
+      v-if="show_delete_modal"
       class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
+      @click.self="show_delete_modal = false"
     >
-      @click.self="showDeleteModal = false" >
       <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div class="p-6">
           <h3 class="text-lg font-semibold text-gray-800 mb-2">Xác nhận xóa</h3>
           <p class="text-gray-600 mb-4">
-            Bạn có chắc chắn muốn xóa sản phẩm
-            <strong>"{{ productToDelete?.title }}"</strong> không? Hành động này
+            Bạn có chắc chắn muốn xóa người dùng
+            <strong>"{{ user_to_delete?.name }}"</strong> không? Hành động này
             không thể hoàn tác.
           </p>
           <div class="flex justify-end space-x-3">
             <button
-              @click="showDeleteModal = false"
+              @click="show_delete_modal = false"
               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
               Hủy
             </button>
             <button
-              @click="deleteProduct"
+              @click="deleteUser"
               :disabled="deleting"
               class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
@@ -706,92 +560,33 @@
 
     <!-- Bulk Delete Confirmation Modal -->
     <div
-      v-if="showBulkDeleteModal"
-      <div
+      v-if="show_bulk_delete_modal"
       class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
+      @click.self="show_bulk_delete_modal = false"
     >
-      @click.self="showBulkDeleteModal = false" >
       <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div class="p-6">
           <h3 class="text-lg font-semibold text-gray-800 mb-2">
-            Xác nhận xóa nhiều sản phẩm
+            Xác nhận xóa nhiều người dùng
           </h3>
           <p class="text-gray-600 mb-4">
             Bạn có chắc chắn muốn xóa
-            <strong>{{ selectedProducts.length }} sản phẩm</strong> đã chọn
+            <strong>{{ selected_users.length }} người dùng</strong> đã chọn
             không? Hành động này không thể hoàn tác.
           </p>
           <div class="flex justify-end space-x-3">
             <button
-              @click="showBulkDeleteModal = false"
+              @click="show_bulk_delete_modal = false"
               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
               Hủy
             </button>
             <button
-              @click="bulkDeleteProducts"
-              :disabled="bulkDeleting"
+              @click="bulkDeleteUsers"
+              :disabled="bulk_deleting"
               class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
-              {{ bulkDeleting ? "Đang xóa..." : "Xóa" }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete All Confirmation Modal -->
-    <div
-      v-if="showDeleteAllModal"
-      <div
-      class="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
-    >
-      @click.self="showDeleteAllModal = false" >
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div class="p-6">
-          <div
-            class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full"
-          >
-            <svg
-              class="w-6 h-6 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-          </div>
-          <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">
-            Xác nhận xóa tất cả sản phẩm
-          </h3>
-          <p class="text-gray-600 mb-4 text-center">
-            Bạn có chắc chắn muốn xóa
-            <strong class="text-red-600"
-              >TẤT CẢ {{ pagination?.total || 0 }} sản phẩm</strong
-            >
-            không?<br />
-            <span class="text-red-600 font-semibold"
-              >Hành động này không thể hoàn tác!</span
-            >
-          </p>
-          <div class="flex justify-end space-x-3">
-            <button
-              @click="showDeleteAllModal = false"
-              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Hủy
-            </button>
-            <button
-              @click="deleteAllProducts"
-              :disabled="deletingAll"
-              class="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 disabled:opacity-50"
-            >
-              {{ deletingAll ? "Đang xóa..." : "Xóa tất cả" }}
+              {{ bulk_deleting ? "Đang xóa..." : "Xóa" }}
             </button>
           </div>
         </div>
@@ -801,9 +596,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
+// H1: import runtime functions
+import { ref, onMounted, computed } from "vue";
+
+// H6: i18n, store
 import api from "../services/api.js";
 
+// H5: props, emits
 const props = defineProps({
   user: {
     type: Object,
@@ -811,51 +610,63 @@ const props = defineProps({
   },
 });
 
-defineEmits(["logout"]);
+const emit = defineEmits(["logout"]);
 
+// H7: variables
 const loading = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
-const bulkDeleting = ref(false);
-const deletingAll = ref(false);
-const products = ref([]);
+const bulk_deleting = ref(false);
+const users = ref([]);
 const pagination = ref(null);
-const searchQuery = ref("");
-const searchTimeout = ref(null);
-const selectedProducts = ref([]);
+const search_query = ref("");
+const search_timeout = ref(null);
+const selected_users = ref([]);
 
-const showModal = ref(false);
-const showDeleteModal = ref(false);
-const showBulkDeleteModal = ref(false);
-const showDeleteAllModal = ref(false);
-const editingProduct = ref(null);
-const productToDelete = ref(null);
+const show_modal = ref(false);
+const show_delete_modal = ref(false);
+const show_bulk_delete_modal = ref(false);
+const editing_user = ref(null);
+const user_to_delete = ref(null);
 
 const form = ref({
-  title: "",
-  price: 0,
-  stock: 0,
-  author: "",
-  publisher: "",
-  isbn: "",
-  cover_url: "",
-  description: "",
-  status: "active",
+  name: "",
+  email: "",
+  password: "",
+  role: "user",
 });
 
-const fetchProducts = async (page = 1) => {
+// H9: computed
+/**
+ * Kiểm tra xem tất cả người dùng đã được chọn chưa
+ */
+const is_all_selected = computed(() => {
+  return (
+    users.value.length > 0 &&
+    users.value.every((user_item) =>
+      selected_users.value.includes(user_item.id)
+    )
+  );
+});
+
+// H10: functions
+/**
+ * Lấy danh sách người dùng từ server
+ * @param {number} page - Số trang
+ */
+const fetchUsers = async (page = 1) => {
   try {
     loading.value = true;
     const params = new URLSearchParams({
       page: page.toString(),
     });
 
-    if (searchQuery.value) {
-      params.append("search", searchQuery.value);
+    if (search_query.value) {
+      params.append("search", search_query.value);
     }
 
-    const response = await api.get(`/admin/products?${params.toString()}`);
-    products.value = response.data.data || [];
+    const response = await api.get(`/admin/users?${params.toString()}`);
+    users.value = response.data.data || [];
     pagination.value = {
       current_page: response.data.current_page,
       last_page: response.data.last_page,
@@ -864,30 +675,40 @@ const fetchProducts = async (page = 1) => {
       total: response.data.total,
     };
   } catch (error) {
-    console.error("Error fetching products:", error);
-    alert("Lỗi khi tải danh sách sản phẩm");
+    console.error("Lỗi khi lấy danh sách người dùng:", error);
+    alert("Lỗi khi tải danh sách người dùng");
   } finally {
     loading.value = false;
   }
 };
 
+/**
+ * Xử lý tìm kiếm với debounce
+ */
 const handleSearch = () => {
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value);
+  if (search_timeout.value) {
+    clearTimeout(search_timeout.value);
   }
-  searchTimeout.value = setTimeout(() => {
-    fetchProducts(1);
+  search_timeout.value = setTimeout(() => {
+    fetchUsers(1);
   }, 500);
 };
 
+/**
+ * Chuyển trang
+ * @param {number} page - Số trang
+ */
 const changePage = (page) => {
   if (page >= 1 && page <= pagination.value.last_page) {
-    fetchProducts(page);
-    // Scroll to top when changing page
+    fetchUsers(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 };
 
+/**
+ * Tính toán các số trang để hiển thị
+ * @returns {Array} - Mảng các số trang
+ */
 const getPageNumbers = () => {
   if (!pagination.value) return [];
 
@@ -896,28 +717,23 @@ const getPageNumbers = () => {
   const pages = [];
 
   if (last <= 7) {
-    // Hiển thị tất cả các trang nếu <= 7 trang
     for (let i = 1; i <= last; i++) {
       pages.push(i);
     }
   } else {
-    // Logic hiển thị trang với ellipsis
     if (current <= 3) {
-      // Đầu danh sách
       for (let i = 1; i <= 4; i++) {
         pages.push(i);
       }
       pages.push("...");
       pages.push(last);
     } else if (current >= last - 2) {
-      // Cuối danh sách
       pages.push(1);
       pages.push("...");
       for (let i = last - 3; i <= last; i++) {
         pages.push(i);
       }
     } else {
-      // Giữa danh sách
       pages.push(1);
       pages.push("...");
       for (let i = current - 1; i <= current + 1; i++) {
@@ -931,174 +747,165 @@ const getPageNumbers = () => {
   return pages;
 };
 
+/**
+ * Mở modal thêm người dùng
+ */
 const openAddModal = () => {
-  editingProduct.value = null;
+  editing_user.value = null;
   resetForm();
-  showModal.value = true;
+  show_modal.value = true;
 };
 
-const openEditModal = (product) => {
-  editingProduct.value = product;
+/**
+ * Mở modal sửa người dùng
+ * @param {Object} user_item - Thông tin người dùng
+ */
+const openEditModal = (user_item) => {
+  editing_user.value = user_item;
   form.value = {
-    title: product.title || "",
-    price: product.price || 0,
-    stock: product.stock || 0,
-    author: product.author || "",
-    publisher: product.publisher || "",
-    isbn: product.isbn || "",
-    cover_url: product.cover_url || "",
-    description: product.description || "",
-    status: product.status || "active",
+    name: user_item.name || "",
+    email: user_item.email || "",
+    password: "",
+    role: user_item.role || "user",
   };
-  showModal.value = true;
+  show_modal.value = true;
 };
 
+/**
+ * Đóng modal
+ */
 const closeModal = () => {
-  showModal.value = false;
-  editingProduct.value = null;
+  show_modal.value = false;
+  editing_user.value = null;
   resetForm();
 };
 
+/**
+ * Reset form về giá trị mặc định
+ */
 const resetForm = () => {
   form.value = {
-    title: "",
-    price: 0,
-    stock: 0,
-    author: "",
-    publisher: "",
-    isbn: "",
-    cover_url: "",
-    description: "",
-    status: "active",
+    name: "",
+    email: "",
+    password: "",
+    role: "user",
   };
 };
 
-const saveProduct = async () => {
+/**
+ * Lưu người dùng (thêm mới hoặc cập nhật)
+ */
+const saveUser = async () => {
   try {
     saving.value = true;
 
-    if (editingProduct.value) {
-      // Update
-      await api.put(`/admin/products/${editingProduct.value.id}`, form.value);
-      alert("Cập nhật sản phẩm thành công!");
+    const data_to_send = { ...form.value };
+    // Nếu đang sửa và không có password mới, không gửi password
+    if (editing_user.value && !data_to_send.password) {
+      delete data_to_send.password;
+    }
+
+    if (editing_user.value) {
+      await api.put(`/admin/users/${editing_user.value.id}`, data_to_send);
+      alert("Cập nhật người dùng thành công!");
     } else {
-      // Create
-      await api.post("/admin/products", form.value);
-      alert("Thêm sản phẩm thành công!");
+      await api.post("/admin/users", data_to_send);
+      alert("Thêm người dùng thành công!");
     }
 
     closeModal();
-    fetchProducts(pagination.value?.current_page || 1);
+    fetchUsers(pagination.value?.current_page || 1);
   } catch (error) {
-    console.error("Error saving product:", error);
-    const errorMessage =
-      error.response?.data?.message || "Lỗi khi lưu sản phẩm";
-    alert(errorMessage);
+    console.error("Lỗi khi lưu người dùng:", error);
+    const error_message =
+      error.response?.data?.message || "Lỗi khi lưu người dùng";
+    alert(error_message);
   } finally {
     saving.value = false;
   }
 };
 
-const confirmDelete = (product) => {
-  productToDelete.value = product;
-  showDeleteModal.value = true;
+/**
+ * Xác nhận xóa người dùng
+ * @param {Object} user_item - Thông tin người dùng
+ */
+const confirmDelete = (user_item) => {
+  if (user_item.id === props.user.id) {
+    alert("Không thể xóa chính tài khoản của bạn");
+    return;
+  }
+  user_to_delete.value = user_item;
+  show_delete_modal.value = true;
 };
 
-const deleteProduct = async () => {
+/**
+ * Xóa người dùng
+ */
+const deleteUser = async () => {
   try {
     deleting.value = true;
-    await api.delete(`/admin/products/${productToDelete.value.id}`);
-    alert("Xóa sản phẩm thành công!");
-    showDeleteModal.value = false;
-    productToDelete.value = null;
-    fetchProducts(pagination.value?.current_page || 1);
+    await api.delete(`/admin/users/${user_to_delete.value.id}`);
+    alert("Xóa người dùng thành công!");
+    show_delete_modal.value = false;
+    user_to_delete.value = null;
+    fetchUsers(pagination.value?.current_page || 1);
   } catch (error) {
-    console.error("Error deleting product:", error);
-    alert("Lỗi khi xóa sản phẩm");
+    console.error("Lỗi khi xóa người dùng:", error);
+    const error_message =
+      error.response?.data?.message || "Lỗi khi xóa người dùng";
+    alert(error_message);
   } finally {
     deleting.value = false;
   }
 };
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(value);
-};
-
-const isAllSelected = computed(() => {
-  return (
-    products.value.length > 0 &&
-    products.value.every((product) =>
-      selectedProducts.value.includes(product.id)
-    )
-  );
-});
-
+/**
+ * Chọn/bỏ chọn tất cả người dùng
+ */
 const toggleSelectAll = () => {
-  if (isAllSelected.value) {
-    selectedProducts.value = [];
+  if (is_all_selected.value) {
+    selected_users.value = [];
   } else {
-    selectedProducts.value = products.value.map((product) => product.id);
+    selected_users.value = users.value.map((user_item) => user_item.id);
   }
 };
 
+/**
+ * Xác nhận xóa nhiều người dùng
+ */
 const confirmBulkDelete = () => {
-  if (selectedProducts.value.length === 0) {
-    alert("Vui lòng chọn ít nhất một sản phẩm để xóa");
+  if (selected_users.value.length === 0) {
+    alert("Vui lòng chọn ít nhất một người dùng để xóa");
     return;
   }
-  showBulkDeleteModal.value = true;
+  show_bulk_delete_modal.value = true;
 };
 
-const bulkDeleteProducts = async () => {
+/**
+ * Xóa nhiều người dùng cùng lúc
+ */
+const bulkDeleteUsers = async () => {
   try {
-    bulkDeleting.value = true;
-    const response = await api.post("/admin/products/bulk-delete", {
-      ids: selectedProducts.value,
+    bulk_deleting.value = true;
+    const response = await api.post("/admin/users/bulk-delete", {
+      ids: selected_users.value,
     });
-    alert(response.data.message || "Xóa sản phẩm thành công!");
-    showBulkDeleteModal.value = false;
-    selectedProducts.value = [];
-    fetchProducts(pagination.value?.current_page || 1);
+    alert(response.data.message || "Xóa người dùng thành công!");
+    show_bulk_delete_modal.value = false;
+    selected_users.value = [];
+    fetchUsers(pagination.value?.current_page || 1);
   } catch (error) {
-    console.error("Error bulk deleting products:", error);
-    const errorMessage =
-      error.response?.data?.message || "Lỗi khi xóa sản phẩm";
-    alert(errorMessage);
+    console.error("Lỗi khi xóa nhiều người dùng:", error);
+    const error_message =
+      error.response?.data?.message || "Lỗi khi xóa người dùng";
+    alert(error_message);
   } finally {
-    bulkDeleting.value = false;
+    bulk_deleting.value = false;
   }
 };
 
-const confirmDeleteAll = () => {
-  if (!pagination.value || pagination.value.total === 0) {
-    alert("Không có sản phẩm nào để xóa");
-    return;
-  }
-  showDeleteAllModal.value = true;
-};
-
-const deleteAllProducts = async () => {
-  try {
-    deletingAll.value = true;
-    const response = await api.delete("/admin/products/delete-all");
-    alert(response.data.message || "Xóa tất cả sản phẩm thành công!");
-    showDeleteAllModal.value = false;
-    selectedProducts.value = [];
-    fetchProducts(1);
-  } catch (error) {
-    console.error("Error deleting all products:", error);
-    const errorMessage =
-      error.response?.data?.message || "Lỗi khi xóa tất cả sản phẩm";
-    alert(errorMessage);
-  } finally {
-    deletingAll.value = false;
-  }
-};
-
+// H8: lifecycle hooks
 onMounted(() => {
-  fetchProducts();
+  fetchUsers();
 });
 </script>

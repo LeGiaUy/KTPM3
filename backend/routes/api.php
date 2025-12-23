@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\ProductController;
 
 // 🔐 ADMIN ROUTES
@@ -9,14 +10,18 @@ use App\Http\Controllers\Api\ProductController;
 // Route::middleware(['auth:sanctum', 'admin'])
 Route::prefix('admin')
     ->group(function () {
-        // Đặt các route đặc biệt TRƯỚC apiResource để tránh conflict
+        // Products routes
         Route::get('products/statistics', [AdminProductController::class, 'statistics']);
         Route::post('products/import', [AdminProductController::class, 'import']);
         Route::post('products/import/openlibrary', [AdminProductController::class, 'importMany']);
         Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete']);
         Route::delete('products/delete-all', [AdminProductController::class, 'deleteAll']);
-        // apiResource phải đặt SAU các route đặc biệt
         Route::apiResource('products', AdminProductController::class);
+
+        // Users routes
+        Route::get('users/statistics', [AdminUserController::class, 'statistics']);
+        Route::post('users/bulk-delete', [AdminUserController::class, 'bulkDelete']);
+        Route::apiResource('users', AdminUserController::class);
     });
 
 // 🔓 PUBLIC ROUTES
