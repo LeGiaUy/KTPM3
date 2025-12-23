@@ -5,8 +5,9 @@ use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\ProductController;
 
 // 🔐 ADMIN ROUTES
-Route::middleware(['auth:sanctum', 'admin'])
-    ->prefix('admin')
+// TẠM THỜI BỎ AUTH ĐỂ TEST VỚI JMETER - NHỚ BẬT LẠI SAU KHI TEST XONG!
+// Route::middleware(['auth:sanctum', 'admin'])
+Route::prefix('admin')
     ->group(function () {
         // Đặt các route đặc biệt TRƯỚC apiResource để tránh conflict
         Route::get('products/statistics', [AdminProductController::class, 'statistics']);
@@ -22,5 +23,14 @@ Route::middleware(['auth:sanctum', 'admin'])
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 
-// 🔥 LOAD AUTH ROUTES (BREEZE)
+// 🔐 AUTH ROUTES
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/cart', [\App\Http\Controllers\Api\CartController::class, 'index']);
+    Route::post('/cart', [\App\Http\Controllers\Api\CartController::class, 'store']);
+    Route::put('/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'update']);
+    Route::delete('/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'destroy']);
+    Route::delete('/cart', [\App\Http\Controllers\Api\CartController::class, 'clear']);
+});
+
+// �🔥 LOAD AUTH ROUTES (BREEZE)
 require __DIR__.'/auth.php';

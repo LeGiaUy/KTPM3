@@ -63,6 +63,12 @@ const routes = [
     props: true,
     meta: { requiresAuth: true, requiresAdmin: false },
   },
+  {
+    path: "/cart",
+    name: "cart",
+    component: () => import("../components/Cart.vue"),
+    meta: { requiresAuth: true, requiresAdmin: false },
+  },
   // Redirect
   {
     path: "/:pathMatch(.*)*",

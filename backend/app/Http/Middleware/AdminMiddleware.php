@@ -15,11 +15,12 @@ class AdminMiddleware
      */
     public function handle($request, Closure $next)
     {
-        if ($request->user()->role !== 'admin') {
-            return response()->json([
-                'message' => 'Forbidden'
-            ], 403);
-        }
+        // TẠM THỜI BỎ CHECK AUTH ĐỂ TEST VỚI JMETER - NHỚ BẬT LẠI SAU KHI TEST XONG!
+        // if (!$request->user() || $request->user()->role !== 'admin') {
+        //     return response()->json([
+        //         'message' => 'Forbidden'
+        //     ], 403);
+        // }
 
         return $next($request);
     }

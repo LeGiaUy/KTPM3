@@ -112,15 +112,37 @@
 
               <div class="flex space-x-3">
                 <button
-                  :disabled="product.stock === 0"
+                  @click="handleAddToCart"
+                  :disabled="product.stock === 0 || addingToCart"
                   :class="
-                    product.stock === 0
+                    product.stock === 0 || addingToCart
                       ? 'opacity-50 cursor-not-allowed'
                       : 'hover:bg-indigo-700'
                   "
-                  class="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium transition-colors"
+                  class="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                 >
-                  Thêm vào giỏ hàng
+                  <svg
+                    v-if="addingToCart"
+                    class="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>{{ addingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng' }}</span>
                 </button>
                 <button
                   :disabled="product.stock === 0"
@@ -190,6 +212,7 @@
 import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import api from "../services/api.js";
+import { useCart } from "../composables/useCart.js";
 import Header from "./Header.vue";
 import Navigation from "./Navigation.vue";
 import Footer from "./Footer.vue";
@@ -203,8 +226,10 @@ const props = defineProps({
 
 const route = useRoute();
 const emit = defineEmits(["logout"]);
+const { addToCart } = useCart();
 
 const loading = ref(false);
+const addingToCart = ref(false);
 const product = ref(null);
 
 const fetchProduct = async () => {
@@ -220,6 +245,21 @@ const fetchProduct = async () => {
     product.value = null;
   } finally {
     loading.value = false;
+  }
+};
+
+const handleAddToCart = async () => {
+  if (!product.value) return;
+  
+  try {
+    addingToCart.value = true;
+    await addToCart(product.value.id, 1);
+    alert("Đã thêm vào giỏ hàng thành công!"); // Simple feedback for now
+  } catch (error) {
+    console.error("Failed to add to cart:", error);
+    alert("Có lỗi xảy ra khi thêm vào giỏ hàng.");
+  } finally {
+    addingToCart.value = false;
   }
 };
 
