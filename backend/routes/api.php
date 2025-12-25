@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProfileController;
 
 // 🔐 ADMIN ROUTES
 // TẠM THỜI BỎ AUTH ĐỂ TEST VỚI JMETER - NHỚ BẬT LẠI SAU KHI TEST XONG!
@@ -30,6 +31,11 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 
 // 🔐 AUTH ROUTES
 Route::middleware(['auth:sanctum'])->group(function () {
+    // Profile routes
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    
+    // Cart routes
     Route::get('/cart', [\App\Http\Controllers\Api\CartController::class, 'index']);
     Route::post('/cart', [\App\Http\Controllers\Api\CartController::class, 'store']);
     Route::put('/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'update']);

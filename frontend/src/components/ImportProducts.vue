@@ -7,9 +7,8 @@
       <div class="p-6">
         <h1 class="text-2xl font-bold mb-8">Admin Panel</h1>
         <nav class="space-y-2">
-          <a
-            href="#"
-            @click.prevent="$emit('navigate', 'dashboard')"
+          <router-link
+            :to="{ name: 'admin-dashboard' }"
             class="flex items-center px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300"
           >
             <svg
